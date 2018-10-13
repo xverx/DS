@@ -16,7 +16,7 @@ int main(int argc,char *argv[])
     int row, column, num=0;
     fin >> row;
     fin >> column;
-    int** temp = new int*[row]; //�Q��temp �ʺA�O�Хh�y�@�ӤG���x�} 
+    int** temp = new int*[row]; //造出一個動態二維矩陣 
 	for(int k = 0; k < row; k++)
     temp[k] = new int[column];
     
@@ -31,25 +31,25 @@ int main(int argc,char *argv[])
       {
       	if(l>0)
       	{
-        if(temp[k][l] >= temp[k][l-1]); //������� 
+        if(temp[k][l] >= temp[k][l-1]); //判斷左邊
         else continue;
     	}
     	
     	if(l<column-1)
     	{
-        if(temp[k][l] >= temp[k][l+1]); //����k�� 
+        if(temp[k][l] >= temp[k][l+1]); //判斷右邊
         else continue;
     	}
     	
     	if(k<row-1)
     	{
-        if(temp[k][l] >= temp[k+1][l]); //����U����
+        if(temp[k][l] >= temp[k+1][l]); //判斷下面
         else continue;
     	}
 		
         if(k>0)
         {
-        	if(temp[k-1][l] <= temp[k][l]); //����W���面
+        	if(temp[k-1][l] <= temp[k][l]); //判斷上面
         	else continue;
 		}
         
