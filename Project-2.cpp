@@ -1,4 +1,4 @@
-#include <iostream>
+#nclude <iostream>
 #include <fstream>
 #include <cstdlib>
 #include <queue>
@@ -9,71 +9,91 @@ typedef struct block_data
 {
 	int dist = -1;
 	bool visited = false;
-}Block;  //¬ö¿ı¦a¹Ï¤W¨C­Ó°Ï¶ôªº¸ê®Æ
-int total = 0; //total:Á`¦@»İ­n±½ªº®æ¼Æ¡F
-queue<int> xque, yque;
+}Block;  //ç´€éŒ„åœ°åœ–ä¸Šæ¯å€‹å€å¡Šçš„è³‡æ–™
+int total = 0; //total:ç¸½å…±éœ€è¦æƒçš„æ ¼æ•¸ï¼›
+queue<int> xque, yque, td_xque, td_yque;
 stack<int> xstack, ystack;
+int i, j;
 
 void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row, int max_col);
+bool miss(Block **distmap, int test_row, int test_col, int max_row, int max_col);
 
 int main()
 {
 	ifstream fin;
-	fin.open("floor.txt"); //¶}´ú¸êÀÉ¡A·Ç³Æ§â¸ê®Æ¼g¶i 
+	fin.open("floor.txt"); //é–‹æ¸¬è³‡æª”ï¼Œæº–å‚™æŠŠè³‡æ–™å¯«é€² 
 	
-	int row, col, battery; //row:¾î¦C¼Æ¡Fcolumn:ª½¦æ¼Æ¡Fbattery:¹q¶q
-	int R_row, R_col; //¥R¹qªº¦ì¸m   
-	int i, j;
-	int cur_row, cur_col, cur_bat, step = 0, direc = 0 ;  //step:©Ò¥Îªº¨B¼Æ  direc:¤è¦V¥N¸¹ 
+	int row, col, battery, entry_num = 0; //row:æ©«åˆ—æ•¸ï¼›column:ç›´è¡Œæ•¸ï¼›battery:é›»é‡
+	int R_row, R_col; //å……é›»çš„ä½ç½®   
+	int cur_row, cur_col, cur_bat, step = 0, direc = 0 ;  //step:æ‰€ç”¨çš„æ­¥æ•¸  direc:æ–¹å‘ä»£è™Ÿ 
 	int back_row, back_col;
-	vector<int> xvec, yvec; //¥Î¨Ó°O¿ı¨C¨Bªº®y¼Ğ 
+	vector<int> xvec, yvec; //ç”¨ä¾†è¨˜éŒ„æ¯æ­¥çš„åº§æ¨™ 
 	fin >> row;
 	fin >> col;
 	fin >> battery;
-	char **map = new char* [row]; //³y¥X¤@­Ó°ÊºA¤Gºû¯x°}(map)
+	char **map = new char* [row]; //é€ å‡ºä¸€å€‹å‹•æ…‹äºŒç¶­çŸ©é™£(map)
 	for(i=0; i<row; i++)
 	    map[i] = new char [col];
 	
-	for(i=0; i<row; i++)   //±N¦a¹Ïªº¸ê®Æ¦s¤J map 
+	for(i=0; i<row; i++)   //å°‡åœ°åœ–çš„è³‡æ–™å­˜å…¥ map 
 	    for(j=0; j<col; j++)
 	        { 
 			    fin >> map[i][j];
-			    if(map[i][j] == 'R') //¿é¤J¦a¹Ï®É¡A¶¶«K°O¿ı R ªº¦ì¸m 
+			    if(map[i][j] == 'R') //è¼¸å…¥åœ°åœ–æ™‚ï¼Œé †ä¾¿è¨˜éŒ„ R çš„ä½ç½® 
 			    {
 			    	R_row = i;
 			    	R_col = j;
 				}
-			}
+			}		
+	fin.close();
 	
-    fin.close();
+	//ä»¥ä¸‹ç‚ºè¨˜éŒ„å…¥å£ (èµ·é») çš„æ•¸é‡è·Ÿä½ç½® 
+	if( (R_row-1 >= 0) && (map[R_row-1][R_col] == '0') )
+	{
+		xque.push(R_row-1); yque.push(R_col);  entry_num++;
+	}
+	if( (R_col-1 >= 0) && (map[R_row][R_col-1] == '0') )
+	{
+		xque.push(R_row); yque.push(R_col-1);  entry_num++;
+	}
+	if( (R_row+1 < row) && (map[R_row-1][R_col] == '0') )
+	{
+		xque.push(R_row+1);  yque.push(R_col); entry_num++;
+	}
+	if( (R_row+1 < col) && (map[R_row-1][R_col] == '0') )
+	{
+		xque.push(R_row);  yque.push(R_col+1); entry_num++;
+	}
+	int *entry_x = new int [entry_num];
+	int *entry_y = new int [entry_num];
+	for(i=0; i < entry_num; i++)
+	{
+		entry_x[i] = xque.front();  xque.pop();
+		entry_y[i] = yque.front();  yque.pop();
+	}
     
-    Block **distmap = new Block* [row]; //³y¥X¤@­Ó°ÊºA¤Gºû¯x°}(distmap)¨Ó¦s¶ZÂ÷ 
+    Block **distmap = new Block* [row]; //é€ å‡ºä¸€å€‹å‹•æ…‹äºŒç¶­çŸ©é™£(distmap)ä¾†å­˜è·é›¢ 
 	for(i=0; i<row; i++)
 	    distmap[i] = new Block [col];
 	    
-    Block **tempmap = new Block* [row]; //³y¥X¤@­Ó°ÊºA¤Gºû¯x°}(distmap)¨Ó¦s¬YÂI¦Ü¨ä¥L®æªº¶ZÂ÷ 
+    Block **tempmap = new Block* [row]; //é€ å‡ºä¸€å€‹å‹•æ…‹äºŒç¶­çŸ©é™£(distmap)ä¾†å­˜æŸé»è‡³å…¶ä»–æ ¼çš„è·é›¢ 
 	for(i=0; i<row; i++)
 	    tempmap[i] = new Block [col];    
 
-    BFS(map, distmap, R_row, R_col, row, col); /*§Q¥ÎBFS§ä¥X¦UÂIÂ÷¥R¹q³Bªº³Ìµu¶ZÂ÷ 
-	   	  			 		      	 			       ¨Ã§ä¥X»İ­n±½ªº®æ¼Æ*/
-	delete map;
-	 
-	for(i=0; i<row; i++)
-	    for(j=0; j<col; j++)
-	    distmap[i][j].visited = false;
-	
+    BFS(map, distmap, R_row, R_col, row, col); /*åˆ©ç”¨BFSæ‰¾å‡ºå„é»é›¢å……é›»è™•çš„æœ€çŸ­è·é›¢ 
+	   	  			 		      	 			       ä¸¦æ‰¾å‡ºéœ€è¦æƒçš„æ ¼æ•¸*/
+															
 	int hit = 0;    
 	cur_row = R_row;
 	cur_col = R_col;
 	cur_bat = battery;
-	while(total > 0)
-	{
+//	while(total > 0)
+//	{
 		hit = 0;
 		while(hit < 4)
 		{
 			while( (cur_row-1 >= 0) && (cur_bat-1 >= distmap[cur_row-1][cur_col].dist)
-			&& (distmap[cur_row-1][cur_col].dist>0) && (distmap[cur_row-1][cur_col].visited == false) ) //©¹¤W 
+			&& (distmap[cur_row-1][cur_col].dist>0) && (distmap[cur_row-1][cur_col].visited == false) ) //å¾€ä¸Š 
 			{
 				distmap[cur_row-1][cur_col].visited = true;
 				cur_row = cur_row-1;
@@ -87,7 +107,7 @@ int main()
 			hit++;
 			
 			while(  (cur_col-1 >= 0) && (cur_bat-1 >= distmap[cur_row][cur_col-1].dist)
-			&& (distmap[cur_row][cur_col-1].dist>0) && (distmap[cur_row][cur_col-1].visited == false) ) //©¹¥ª 
+			&& (distmap[cur_row][cur_col-1].dist>0) && (distmap[cur_row][cur_col-1].visited == false) ) //å¾€å·¦ 
 			{
 				distmap[cur_row][cur_col-1].visited = true;
 				cur_col = cur_col-1;
@@ -101,7 +121,7 @@ int main()
 			hit++;
 			
 			while( (cur_row+1 < row) && (cur_bat-1 >= distmap[cur_row+1][cur_col].dist)
-			&& (distmap[cur_row+1][cur_col].dist>0) && (distmap[cur_row+1][cur_col].visited == false) ) //©¹¤U 
+			&& (distmap[cur_row+1][cur_col].dist>0) && (distmap[cur_row+1][cur_col].visited == false) ) //å¾€ä¸‹ 
 			{
 				distmap[cur_row+1][cur_col].visited = true;
 				cur_row = cur_row+1;
@@ -115,7 +135,7 @@ int main()
 			hit++;
 			
 			while(  (cur_col+1 < col ) && (cur_bat-1 >= distmap[cur_row][cur_col+1].dist)
-			&& (distmap[cur_row][cur_col+1].dist>0) && (distmap[cur_row][cur_col+1].visited == false) ) //©¹¥ª 
+			&& (distmap[cur_row][cur_col+1].dist>0) && (distmap[cur_row][cur_col+1].visited == false) ) //å¾€å·¦ 
 			{
 				distmap[cur_row][cur_col+1].visited = true;
 				cur_col = cur_col+1;
@@ -129,12 +149,40 @@ int main()
 			hit++;
 		}
 		
-		
-		
-		//xstack.pop();  ystack.pop();
-		while(distmap[cur_row][cur_col].dist > 1)  //Áo©úªº¦^¥h 
+		cout << cur_row << 'C' << cur_col << endl;
+		if(cur_bat > distmap[cur_row][cur_col].dist)
 		{
-			//back_row = xstack.top();  back_col = ystack.top();
+			map[R_row][R_col] = '1';
+			BFS(map, tempmap, cur_row, cur_col, row, col);
+			tempmap[cur_row][cur_col].dist = 0; //å› ç‚ºé€™æ ¼åœ¨åŸæœ¬çš„ mapä¸­æ˜¯ 0, ç¶“BFSå¾Œé‚£æ ¼æœƒè®Š 2è€Œé 0 
+			
+			for(i=0; i<row; i++) //ç”¨ä¾†å°å‡º tempmap 
+			for(j=0; j<col; j++)
+			{
+        	cout.width(2); 
+			cout << tempmap[i][j].dist << " ";
+        	if(j == col-1)
+        	cout << endl;
+			}
+		
+		    xstack.pop();  ystack.pop(); //å› ç‚ºç¬¬ä¸€å€‹æ˜¯ cur_rol & cur_col 
+		    back_row = xstack.top();  back_col = ystack.top();
+		    while( !miss(distmap, back_row, back_col, row, col) )
+		    {
+	 	        xstack.pop();  ystack.pop();
+	 	        back_row = xstack.top();  back_col = ystack.top();
+		    }
+		    cout << back_row << 'B' << back_col << endl;
+		}
+		
+		if(cur_bat > tempmap[back_row][back_col].dist + distmap[back_row][back_col].dist)
+		{
+			
+			continue;
+		}
+		
+		while(distmap[cur_row][cur_col].dist > 1)  //è°æ˜çš„å›å» 
+		{
 			if( (cur_row-1 >=0) && (distmap[cur_row-1][cur_col].dist>0) && (distmap[cur_row][cur_col].dist > distmap[cur_row-1][cur_col].dist) )
 			{
 				cur_row = cur_row-1;  cur_col = cur_col;
@@ -176,13 +224,22 @@ int main()
 			//xstack.push(cur_row);  ystack.push(cur_col);
 			cout << cur_row << " " << cur_col << " " << cur_bat << endl;
 		}
-	}
+//	}
 	cout << total << " " << step << endl;
-	for(i=0; i<row; i++) //¥Î¨ÓÀË¬d distmap 
+	for(i=0; i<row; i++) //ç”¨ä¾†å°å‡º distmap.dist 
 	for(j=0; j<col; j++)
 	{
         cout.width(2); 
 		cout << distmap[i][j].dist << " ";
+        if(j == col-1)
+        cout << endl;
+	}
+	cout << endl;
+	for(i=0; i<row; i++) //ç”¨ä¾†å°å‡º distmap.visited
+	for(j=0; j<col; j++)
+	{
+        cout.width(2); 
+		cout << distmap[i][j].visited << " ";
         if(j == col-1)
         cout << endl;
 	}
@@ -193,7 +250,7 @@ int main()
 		cout<< xvec[i] << " " << yvec[i] << endl;
 		i++;
 	}
-	
+
 	return 0;
 }
 
@@ -209,7 +266,7 @@ void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row,
 		cur_col = yque.front();  yque.pop();
 		distance = distmap[cur_row][cur_col].dist;
 		
-		if( (cur_row-1 >=0) && (distmap[cur_row-1][cur_col].visited == false) && (map[cur_row-1][cur_col] == '0') )//¦Ò¼{¤W­± 
+		if( (cur_row-1 >=0) && (distmap[cur_row-1][cur_col].visited == false) && (map[cur_row-1][cur_col] == '0') )//è€ƒæ…®ä¸Šé¢ 
 		{
 			xque.push(cur_row-1);  yque.push(cur_col);
 			distmap[cur_row-1][cur_col].visited = true;
@@ -217,7 +274,7 @@ void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row,
 			total++;
 		}
 		
-		if( (cur_col-1 >=0) && (distmap[cur_row][cur_col-1].visited == false) && (map[cur_row][cur_col-1] == '0') )//¦Ò¼{¥ªÃä 
+		if( (cur_col-1 >=0) && (distmap[cur_row][cur_col-1].visited == false) && (map[cur_row][cur_col-1] == '0') )//è€ƒæ…®å·¦é‚Š 
 		{
 			xque.push(cur_row);  yque.push(cur_col-1);
 			distmap[cur_row][cur_col-1].visited = true;
@@ -225,7 +282,7 @@ void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row,
 			total++;
 		}
 		
-		if( (cur_row+1 < max_row) && (map[cur_row+1][cur_col] == '0') && (distmap[cur_row+1][cur_col].visited == false) )//¦Ò¼{¤U­± 
+		if( (cur_row+1 < max_row) && (map[cur_row+1][cur_col] == '0') && (distmap[cur_row+1][cur_col].visited == false) )//è€ƒæ…®ä¸‹é¢ 
 		{
 			xque.push(cur_row+1);  yque.push(cur_col);
 			distmap[cur_row+1][cur_col].visited = true;
@@ -233,7 +290,7 @@ void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row,
 			total++;
 		}
 		
-		if( (cur_col+1 < max_col) && (map[cur_row][cur_col+1] == '0') && (distmap[cur_row][cur_col+1].visited == false) )//¦Ò¼{¥kÃä 
+		if( (cur_col+1 < max_col) && (map[cur_row][cur_col+1] == '0') && (distmap[cur_row][cur_col+1].visited == false) )//è€ƒæ…®å³é‚Š 
 		{
 			xque.push(cur_row);  yque.push(cur_col+1);
 			distmap[cur_row][cur_col+1].visited = true;
@@ -241,5 +298,20 @@ void BFS(char **map, Block **distmap, int start_row, int start_col, int max_row,
 			total++;
 		}
 	}
+	
+	for(i=0; i<max_row; i++)
+	    for(j=0; j<max_col; j++)
+	    distmap[i][j].visited = false;
 }
-//bool revisited()
+
+bool miss(Block **distmap, int test_row, int test_col, int max_row, int max_col)
+{
+	if ( (test_row-1 >= 0) && (distmap[test_row-1][test_col].dist > 0) && (distmap[test_row-1][test_col].visited == false) ) //ä¸Šé¢
+	return true; 
+	if ( (test_col-1 >= 0) && (distmap[test_row][test_col-1].dist > 0) && (distmap[test_row][test_col-1].visited == false) ) //å·¦é‚Š
+	return true;
+	if ( (test_row+1 < max_row) && (distmap[test_row+1][test_col].dist > 0) && (distmap[test_row+1][test_col].visited == false) ) //ä¸‹é¢
+	return true;
+	if ( (test_col+1 < max_col) && (distmap[test_row][test_col+1].dist > 0) && (distmap[test_row][test_col+1].visited == false) ) //å³é‚Š
+	return true;
+}
