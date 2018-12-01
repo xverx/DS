@@ -4,6 +4,7 @@
 #include <queue>
 #include <vector>
 #include <stack>
+#include <string>
 using namespace std;
 typedef struct block_data
 {
@@ -22,10 +23,13 @@ void BFS_temp(Block **distmap, Block **tempmap, int start_row, int start_col, in
 bool miss(Block **distmap, int test_row, int test_col, int max_row, int max_col);
 
 
-int main()
+int main(int argc,char *argv[])
 {
-	ifstream fin;
-	fin.open("FLOOR.txt"); //開測資檔，準備把資料寫進 
+    string s1 = argv[1];
+    s1 += "/floor.data" ;
+    s1 = "./" + s1;
+	
+	ifstream fin(s1);
 	
 	int row, col, battery, entry_num = 0; //row:橫列數；column:直行數；battery:電量
 	int R_row, R_col; //充電的位置   
@@ -105,7 +109,6 @@ int main()
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				xstack.push(cur_row);  ystack.push(cur_col);
 				total--; step++; cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 				hit = 0;
 				continue;
 			}
@@ -119,7 +122,6 @@ int main()
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				xstack.push(cur_row);  ystack.push(cur_col);
 				total--; step++; cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 				hit = 0;
 				continue;
 			}
@@ -133,7 +135,6 @@ int main()
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				xstack.push(cur_row);  ystack.push(cur_col);
 				total--; step++; cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 				hit = 0;
 				continue;
 			}
@@ -147,55 +148,31 @@ int main()
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				xstack.push(cur_row);  ystack.push(cur_col);
 				total--; step++; cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 				hit = 0;
 				continue;
 			}
 			hit++;
 		}
 		
-//		cout << "C1 " << cur_row << " " << cur_col << endl;
-		cout << "Total: " << total << " step:" << step << " cur_bat:"<< cur_bat << endl;
-/*		for(i=0; i<row; i++) //用來印出 distmap.dist 
-		for(j=0; j<col; j++)
-		{
-  		    cout.width(2); 
-			cout << distmap[i][j].dist << " ";
-        	if(j == col-1)
-        	cout << endl;
-		}*/
-//		cout << endl;
 		if(total > 0)
 		{
 			temptotal = total; //因為BFS會動到total，所以要先暫時存在temptotal 
 			if(cur_bat > distmap[cur_row][cur_col].dist)
 			{
 			BFS_temp(distmap, tempmap, cur_row, cur_col, row, col);
-			tempmap[cur_row][cur_col].dist = 0; //因為這格在原本的 map中是 0, 經過BFS_temp後那格會變 2而非 0 
+			tempmap[cur_row][cur_col].dist = 0; //因為這格在原本的 map中是 0, 經BFS後那格會變 2而非 0 
 			}
 			total = temptotal;
-		
-/*			for(i=0; i<row; i++) //用來印出 tempmap 
-			for(j=0; j<col; j++)
-			{
-        	cout.width(2); 
-			cout << tempmap[i][j].dist << " ";
-			if(j == col-1)
-        	cout << endl;
-			}*/
-//			cout << "C2 " << cur_row << " " << cur_col << endl;
-//			cout << xstack.empty() << endl;
+			
 			if(!xstack.empty())
 			{                               //直走到因為電量不夠而非撞牆而停止時，除了會讓他回去
 				stack_empty_row = cur_row,  //也會讓 x_stack 會空掉，會導致找不到下個目的地 
 				stack_empty_col = cur_col;  //所以要記錄原本的位置，好讓機器人能找到下個目的地 
-//				cout << "empty " << stack_empty_row << " " << stack_empty_col << endl; 
 				if( (xstack.top() == cur_row) && (ystack.top() == cur_col) )//如果第一個是 cur_rol & cur_col就 pop,其他狀況怕會把找到的back誤刪 
 				{
 			        xstack.pop();  ystack.pop();
 				}
 			}
-//			cout << "PLEASE!!!!" << endl; 
 			if(!xstack.empty())
 		    {
 		    	back_row = xstack.top();  back_col = ystack.top();
@@ -205,10 +182,8 @@ int main()
 				back_row = stack_empty_row;  back_col = stack_empty_col; 
 			}
 			
-//		    cout << "B1 " << back_row << " " << back_col << endl;
 			while( (!xstack.empty()) && ( !miss(distmap, back_row, back_col, row, col) ) )
 		    {
-		    //	cout << "PLEASE" << endl;
 	 	        xstack.pop();  ystack.pop();
 	 	        if(!xstack.empty())
 	 	        {
@@ -218,8 +193,6 @@ int main()
 		    }
 //		    if(!xstack.empty())
 //		    {
-//		    	cout << "B2 " << back_row << " " << back_col << endl;
-//				cout << "Total: " << total << " step:" << step << " cur_bat:"<< cur_bat << endl;
 				if(cur_bat > tempmap[back_row][back_col].dist + distmap[back_row][back_col].dist) //還沒考慮到中間的充電機會 
 				{
 			 	    int temp_row = back_row, temp_col = back_col;
@@ -227,46 +200,38 @@ int main()
 					tempx_stack.push(temp_row);  tempy_stack.push(temp_col);
 					while(tempmap[temp_row][temp_col].dist > 0) //記錄最短路程 
 					{
-//					    cout << "Here" << endl;
 						if( (temp_row-1 >=0) && (tempmap[temp_row-1][temp_col].dist >= 0) && (tempmap[temp_row-1][temp_col].dist < tempmap[temp_row][temp_col].dist) ) //上面 
 					    {
-//					 	    cout << 1 << endl;
 							temp_row--;
 							tempx_stack.push(temp_row);  tempy_stack.push(temp_col);  continue;
 						}
 					
 						if( (temp_col-1 >=0) && (tempmap[temp_row][temp_col-1].dist >= 0) && (tempmap[temp_row][temp_col-1].dist < tempmap[temp_row][temp_col].dist) ) //左邊 
 						{ 
-//					  	    cout << 2 << endl;
 							temp_col--;
 							tempx_stack.push(temp_row);  tempy_stack.push(temp_col);  continue;
 					    }
 					
 						if( (temp_row+1 < row) && (tempmap[temp_row+1][temp_col].dist >= 0) && (tempmap[temp_row+1][temp_col].dist < tempmap[temp_row][temp_col].dist) ) //下面 
 						{
-//						    cout << 3 << endl;
 							temp_row++;
 							tempx_stack.push(temp_row);  tempy_stack.push(temp_col);  continue;
 						}
 					
 						if( (temp_col+1 < col) && (tempmap[temp_row][temp_col+1].dist >= 0) && (tempmap[temp_row][temp_col+1].dist < tempmap[temp_row][temp_col].dist) ) //右邊 
 						{
-//						    cout << 4 << endl;
 							temp_col++;
 							tempx_stack.push(temp_row);  tempy_stack.push(temp_col);  continue;
 						}
 				    }
 					tempx_stack.pop();  tempy_stack.pop();//因為最上面會是現在的位置，不需要再園地打轉一次 
-//					cout << tempx_stack.top() << " " << tempy_stack.top() << endl;
-//					cout << "Here" << endl;
+					
 					while(!tempx_stack.empty())
 					{
 					    cur_row = tempx_stack.top();  cur_col = tempy_stack.top();
 						tempx_stack.pop();  tempy_stack.pop();
 						xvec.push_back(cur_row);  yvec.push_back(cur_col);
 						step++; cur_bat--;
-						cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
-//						cout << "step: " << step << endl;
 					}
 					//到了需要再檢查的點後，如果最近的充電入口較近，就讓他回去充電
 					//go to back_row & back_col
@@ -291,7 +256,6 @@ int main()
 				
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				step++;  cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 			}
 			
 			else if( (cur_col-1 >=0) && (distmap[cur_row][cur_col-1].dist>0) && (distmap[cur_row][cur_col].dist >= distmap[cur_row][cur_col-1].dist) )
@@ -304,7 +268,6 @@ int main()
 				
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				step++;  cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 			}
 			
 			else if( (cur_row+1 < row) && (distmap[cur_row+1][cur_col].dist>0) && (distmap[cur_row][cur_col].dist >= distmap[cur_row+1][cur_col].dist) ) 
@@ -317,7 +280,6 @@ int main()
 				
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				step++;  cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 			}
 			
 			else if( (cur_col+1 < col) && (distmap[cur_row][cur_col+1].dist>0) && (distmap[cur_row][cur_col].dist >= distmap[cur_row][cur_col+1].dist) )
@@ -330,41 +292,30 @@ int main()
 				
 				xvec.push_back(cur_row);  yvec.push_back(cur_col);
 				step++;  cur_bat--;
-				cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
 			}	
 		}
 		
 		xvec.push_back(R_row);  yvec.push_back(R_col); step++; cur_bat = battery;
-		cout << R_row << " " << R_col << " " << cur_bat << " " << step << endl;
 		if(total > 0)
 		{
 		    xvec.push_back(cur_row);  yvec.push_back(cur_col); step++; cur_bat--;
-			cout << cur_row << " " << cur_col << " " << cur_bat << " " << step << endl;
-//			cout << "Here" << endl;
 		}
-//		cout << "Total: " << total << " step:" << step << " cur_bat:"<< cur_bat << endl;
 	}
-	cout << "Total: " << total << " step:" << step << " cur_bat:"<< cur_bat << endl;
-/*	for(i=0; i<row; i++) //用來印出 distmap.dist 
-	for(j=0; j<col; j++)
+	
+    string s2 = argv[1];
+    s2 += "/final.path";
+
+    ofstream file;
+	file.open(s2);
+	if(file.is_open())
 	{
-        cout.width(2); 
-		cout << distmap[i][j].dist << " ";
-        if(j == col-1)
-        cout << endl;
+        file << step << endl;
+		for(i=0; i<step; i++)
+        {
+            file << xvec[i] << " " << yvec[i] << " " << endl;
+        }
 	}
-	cout << endl;
-	for(i=0; i<row; i++) //用來印出 distmap.visited
-	for(j=0; j<col; j++)
-	{
-        cout.width(2); 
-		cout << distmap[i][j].visited << " ";
-        if(j == col-1)
-        cout << endl;
-	}
-*/ 	cout << step << endl; 
-//	for(i=0; i<step; i++) //用來顯示走的路徑 
-//	cout<< xvec[i] << " " << yvec[i] << endl;
+	file.close();
 
 	return 0;
 }
@@ -475,7 +426,7 @@ void BFS_temp(Block **distmap, Block **tempmap, int start_row, int start_col, in
 			total++;
 		}
 	}
-
+	
 	for(i=0; i<max_row; i++)
 	    for(j=0; j<max_col; j++)
 	    tempmap[i][j].visited = false;
