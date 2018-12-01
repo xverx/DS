@@ -12,7 +12,7 @@ typedef struct block_data
 	bool visited = false;
 }Block;  //紀錄地圖上每個區塊的資料
 int total = 0; //total:總共需要掃的格數；
-queue<int> xque, yque, td_xque, td_yque;
+queue<int> xque, yque;
 stack<int> xstack, ystack;
 int i, j, step = 0, cur_bat; //step: 總共步數   cur_bat:剩下電量
 int cur_row, cur_col; 
@@ -25,15 +25,17 @@ bool miss(Block **distmap, int test_row, int test_col, int max_row, int max_col)
 
 int main(int argc,char *argv[])
 {
+	for( int i = 0; i <= argc; i++)
+    printf( "argv[%d]:%s\n", i, argv[i] );
+
     string s1 = argv[1];
     s1 += "/floor.data" ;
     s1 = "./" + s1;
 	
 	ifstream fin(s1);
 	
-	int row, col, battery, entry_num = 0; //row:橫列數；column:直行數；battery:電量
-	int R_row, R_col; //充電的位置   
-	int direc = 0 ;  //step:所用的步數  direc:方向代號 
+	int row, col, battery; //row:橫列數；column:直行數；battery:電量
+	int R_row, R_col; //充電的位置    
 	int back_row, back_col, temptotal;
 	int stack_empty_row, stack_empty_col;
 	fin >> row;
@@ -54,32 +56,7 @@ int main(int argc,char *argv[])
 				}
 			}		
 	fin.close();
-	
-	//以下為記錄入口 (起點) 的數量跟位置 
-	if( (R_row-1 >= 0) && (map[R_row-1][R_col] == '0') )
-	{
-		xque.push(R_row-1); yque.push(R_col);  entry_num++;
-	}
-	if( (R_col-1 >= 0) && (map[R_row][R_col-1] == '0') )
-	{
-		xque.push(R_row); yque.push(R_col-1);  entry_num++;
-	}
-	if( (R_row+1 < row) && (map[R_row-1][R_col] == '0') )
-	{
-		xque.push(R_row+1);  yque.push(R_col); entry_num++;
-	}
-	if( (R_row+1 < col) && (map[R_row-1][R_col] == '0') )
-	{
-		xque.push(R_row);  yque.push(R_col+1); entry_num++;
-	}
-	int *entry_x = new int [entry_num];
-	int *entry_y = new int [entry_num];
-	for(i=0; i < entry_num; i++)
-	{
-		entry_x[i] = xque.front();  xque.pop();
-		entry_y[i] = yque.front();  yque.pop();
-	}
-    
+
     Block **distmap = new Block* [row]; //造出一個動態二維矩陣(distmap)來存距離 
 	for(i=0; i<row; i++)
 	    distmap[i] = new Block [col];
